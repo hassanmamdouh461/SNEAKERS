@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SNEAKERS — Interactive 3D Showcase</title>
+  <meta name="description" content="An Awwwards-level interactive sneaker showcase with 3D carousel, cinematic pop-out effects, and neon cyberpunk aesthetics.">
+
+  <!-- ==================== FONTS ==================== -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================
+       1. RESET & BASE
+       ================================================ */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Space Grotesk', sans-serif;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      cursor: grab;
+    }
+
+    /* ================================================
+       2. PREMIUM LIGHT BACKGROUND
+       ================================================ */
+    body {
+      background: radial-gradient(circle at center, #ffffff 0%, #f0f0f5 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    /* Subtle grid overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Scanline effect removed/lightened for cleanliness */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 0, 0, 0.01) 3px,
+        rgba(0, 0, 0, 0.01) 6px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ================================================
+       3. HEADER
+       ================================================ */
+    .header {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: clamp(1.8rem, 4.5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #111111;
+      text-shadow: none; /* Removed neon glow */
+    }
+
+    .header p {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      color: #666666;
+      text-transform: uppercase;
+    }
+
+    /* ================================================
+       4. 3D SCENE CONTAINER
+       ================================================ */
+    .scene {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1300px;
+      height: 520px;
+      perspective: 1600px; /* Adjusted perspective for 7 items */
+      overflow: visible;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* ================================================
+       5. 3D WHEEL (CAROUSEL)
+       ================================================ */
+    .wheel {
+      width: 240px;
+      height: 340px;
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* ================================================
+       6. SNEAKER CARD — Light Glassmorphism
+       ================================================ */
+    .wheel__item {
+      position: absolute;
+      width: 240px;
+      height: 340px;
+      left: 50%;
+      top: 50%;
+      margin-left: -120px;
+      margin-top: -170px;
+      border-radius: 20px;
+      overflow: visible; /* Allow sneaker to pop outside */
+      will-change: transform, opacity;
+      cursor: pointer;
+
+      opacity: 0.4; /* Increased opacity for better visibility */
+      /* Apply blur to container, not the image itself */
+      filter: grayscale(0.2) blur(2px);
+
+      transition:
+        opacity 1s cubic-bezier(0.19, 1, 0.22, 1),
+        filter 1s cubic-bezier(0.19, 1, 0.22, 1),
+        border-color 1s cubic-bezier(0.19, 1, 0.22, 1),
+        box-shadow 1s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    /* Glass background panel */
+    .wheel__item .card-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(0, 0, 0, 0.05); /* Base subtle dark border */
+      border-top: 1px solid rgba(255, 255, 255, 0.8); /* Strong light reflection top */
+      border-left: 1px solid rgba(255, 255, 255, 0.5); /* Light reflection left */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06); /* Softer, broader shadow */
+      overflow: hidden;
+      z-index: 0;
+      transition: border-color 1s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 1s cubic-bezier(0.19, 1, 0.22, 1), background 1s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    /* Subtle inner highlight line at top */
+    .wheel__item .card-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+    }
+
+    /* ================================================
+       7. SNEAKER IMAGE
+       ================================================ */
+    .wheel__item .sneaker-img {
+      position: absolute;
+      /* Render LARGE, then scale down for crisp quality */
+      width: 150%;
+      max-width: 400px;
+      left: 50%;
+      top: 32%;
+      /* Inactive: scaled DOWN from natural size */
+      transform: translateX(-50%) translateY(-50%) scale(0.48) rotate(0deg);
+      z-index: 2;
+      pointer-events: none;
+      object-fit: contain;
+      
+      /* Hardware acceleration & anti-aliasing */
+      backface-visibility: hidden;
+      transform-style: preserve-3d;
+      image-rendering: high-quality;
+      image-rendering: -webkit-optimize-contrast;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      will-change: transform, filter;
+      -ms-interpolation-mode: bicubic;
+
+      /* Inactive: subtle shadow only, no blur on image itself */
+      filter: brightness(0.92) drop-shadow(0 10px 10px rgba(0,0,0,0.15));
+
+      transition:
+        transform 1s cubic-bezier(0.19, 1, 0.22, 1),
+        filter 1s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    /* ================================================
+       8. TEXT CONTENT (Bottom of card) & DYNAMIC SHADOW
+       ================================================ */
+    .wheel__item .dynamic-shadow {
+      position: absolute;
+      width: 140px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 50%;
+      left: 50%;
+      bottom: 60px;
+      transform: translateX(-50%) scale(1);
+      filter: blur(8px);
+      z-index: 1;
+      opacity: 0.8;
+      transition:
+        transform 1s cubic-bezier(0.19, 1, 0.22, 1),
+        filter 1s cubic-bezier(0.19, 1, 0.22, 1),
+        opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .wheel__item .card-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 18px 18px 20px;
+      z-index: 3; /* Above image and shadow */
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .wheel__item .card-info .sneaker-name,
+    .wheel__item .card-info .sneaker-desc {
+      opacity: 0;
+      transform: translateY(15px);
+      transition:
+        opacity 0.9s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 0.9s cubic-bezier(0.19, 1, 0.22, 1),
+        color 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .wheel__item .card-info .sneaker-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #1a1a1a;
+      transition-delay: 0s;
+    }
+
+    .wheel__item .card-info .sneaker-desc {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #555555; /* Enhanced contrast for better readability */
+      transition-delay: 0s;
+    }
+
+    /* ================================================
+       9. ACTIVE STATE — POP-OUT EFFECT
+       ================================================ */
+    .wheel__item.active {
+      opacity: 1;
+      filter: grayscale(0) blur(0px); /* Clear active focus */
+    }
+
+    .wheel__item.active .card-bg {
+      border-color: rgba(0, 0, 0, 0.08); /* Re-established dark right/bottom base */
+      border-top: 1px solid rgba(255, 255, 255, 0.9);
+      border-left: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.12); /* Increased lift box-shadow */
+      /* Background gradient managed by JS for accent color */
+    }
+
+    /* SNEAKER: dramatic pop-out, tilted, floating (Breaking the Box) */
+    .wheel__item.active .sneaker-img {
+      /* Active: return to natural size (scale 1) - NO UPSCALING = NO PIXELATION */
+      transform: translateX(-50%) translateY(-50%) scale(1) rotate(-15deg) translateY(-25px);
+      filter: 
+        brightness(1.05) 
+        contrast(1.08) 
+        saturate(1.05)
+        drop-shadow(0 30px 40px rgba(0, 0, 0, 0.3)); /* Deep & spread shadow */
+    }
+
+    /* DYNAMIC CONTACT SHADOW */
+    .wheel__item.active .dynamic-shadow {
+      transform: translateX(-50%) scale(1.8) translateY(10px);
+      filter: blur(15px);
+      opacity: 0.3;
+    }
+
+    /* TEXT: fade in & slide up (staggered) */
+    .wheel__item.active .card-info .sneaker-name,
+    .wheel__item.active .card-info .sneaker-desc {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .wheel__item.active .card-info .sneaker-name {
+      transition-delay: 0.15s;
+    }
+    .wheel__item.active .card-info .sneaker-desc {
+      transition-delay: 0.25s;
+    }
+
+    /* ================================================
+       10. ACTIVE INDICATOR (BOTTOM)
+       ================================================ */
+    .active-label {
+      position: relative;
+      z-index: 2;
+      margin-top: 36px;
+      text-align: center;
+      min-height: 46px;
+    }
+
+    .active-label .current-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #111111;
+      transition: 
+        color 0.8s cubic-bezier(0.19, 1, 0.22, 1), 
+        text-shadow 0.8s cubic-bezier(0.19, 1, 0.22, 1),
+        opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1),
+        transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: center;
+    }
+
+    .active-label .current-name.updating {
+      opacity: 0;
+      transform: scale(0.8) translateY(-10px);
+    }
+
+    .active-label .hint {
+      margin-top: 8px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: #888888;
+      text-transform: uppercase;
+    }
+
+    /* ================================================
+       11. GRABBING CURSOR
+       ================================================ */
+    body.is-dragging {
+      cursor: grabbing;
+    }
+
+    /* ================================================
+       12. CINEMATIC INTRO ANIMATIONS
+       ================================================ */
+    /* Hide everything initially when intro is running */
+    body.intro-running .wheel__item .sneaker-img,
+    body.intro-running .wheel__item .card-bg,
+    body.intro-running .wheel__item .card-info,
+    body.intro-running .wheel__item .dynamic-shadow,
+    body.intro-running .active-label .current-name {
+      opacity: 0;
+    }
+
+    /* ACTIVE LABEL INTRO: Name fades and scales up */
+    body.intro-running .active-label .current-name {
+      animation: labelReveal 1s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s forwards;
+    }
+
+    @keyframes labelReveal {
+      0% {
+        opacity: 0;
+        transform: scale(0.7) translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    /* ACTIVE ITEM INTRO: Sneaker drops from sky */
+    body.intro-running .wheel__item.active .sneaker-img {
+      animation: sneakerDrop 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes sneakerDrop {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-250px) scale(0.35) rotate(-25deg);
+      }
+      100% {
+        opacity: 1;
+        /* Final state matches .active state - scale(1) for maximum quality */
+        transform: translateX(-50%) translateY(-50%) scale(1) rotate(-15deg) translateY(-25px);
+      }
+    }
+
+    /* ACTIVE ITEM INTRO: Card rises from bottom */
+    body.intro-running .wheel__item.active .card-bg {
+      animation: cardRise 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+    }
+
+    @keyframes cardRise {
+      0% {
+        opacity: 0;
+        transform: translateY(150px) scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* ACTIVE ITEM INTRO: Text info rises */
+    body.intro-running .wheel__item.active .card-info {
+      animation: infoRise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+    }
+
+    @keyframes infoRise {
+      0% {
+        opacity: 0;
+        transform: translateY(100px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ACTIVE ITEM INTRO: Shadow fades in */
+    body.intro-running .wheel__item.active .dynamic-shadow {
+      animation: shadowFade 1s ease-out 0.6s forwards;
+    }
+
+    @keyframes shadowFade {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 0.3;
+      }
+    }
+
+    /* INACTIVE ITEMS INTRO: Only fade in (no movement) */
+    body.intro-running .wheel__item:not(.active) .sneaker-img,
+    body.intro-running .wheel__item:not(.active) .card-bg,
+    body.intro-running .wheel__item:not(.active) .dynamic-shadow {
+      animation: fadeInBackground 0.8s ease-out 1s forwards;
+    }
+
+    @keyframes fadeInBackground {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <div class="header">
+    <h1>Sneakers</h1>
+    <p>Drag to explore the collection</p>
+  </div>
+
+  <!-- ==================== 3D SCENE ==================== -->
+  <div class="scene" id="scene">
+    <div class="wheel" id="wheel">
+      <!-- Items injected by JS -->
+    </div>
+  </div>
+
+  <!-- ==================== ACTIVE LABEL ==================== -->
+  <div class="active-label">
+    <div class="current-name" id="currentName">—</div>
+    <div class="hint">drag · click · arrows · explore</div>
+  </div>
+
+  <script>
+    /* ================================================
+       SNEAKERS DATA
+       Each sneaker has: name, shortDesc, price, accent, image
+       Images are transparent-background PNGs (via pngwing / similar)
+       ================================================ */
+    const SNEAKERS = [
+      {
+        name: 'White Classic',
+        shortDesc: 'Clean and recognizable',
+        accent: '#f0c674',
+        image: 'images/sneaker_real_1-removebg-preview.png'
+      },
+      {
+        name: 'Red High-Top',
+        shortDesc: 'Dynamic streetwear',
+        accent: '#ff3c3c',
+        image: 'images/sneaker_real_2-removebg-preview.png'
+      },
+      {
+        name: 'Retro Runner',
+        shortDesc: 'Grey suede with purple',
+        accent: '#a78bfa',
+        image: 'images/sneaker_real_3-removebg-preview.png'
+      },
+      {
+        name: 'Slip-on Future',
+        shortDesc: 'Minimalist olive green',
+        accent: '#39ff14',
+        image: 'images/sneaker_real_4-removebg-preview.png'
+      },
+      {
+        name: 'Metallic Dad',
+        shortDesc: 'Chunky white mesh',
+        accent: '#00d4ff',
+        image: 'images/sneaker_real_5-removebg-preview.png'
+      },
+      {
+        name: 'Classic Skate',
+        shortDesc: 'Black suede wide laces',
+        accent: '#ffffff',
+        image: 'images/sneaker_real_6-removebg-preview.png'
+      },
+      {
+        name: 'Vintage Hoops',
+        shortDesc: 'Yellow & purple vintage leather',
+        accent: '#ffb300',
+        image: 'images/sneaker_real_8-removebg-preview.png'
+      }
+    ];
+
+    const ITEM_COUNT   = SNEAKERS.length; // Now 7
+    const ANGLE_STEP   = 360 / ITEM_COUNT; // Automatically recalculates to ~51.4°
+    const TRANSLATE_Z  = 650; // Adjusted radius for 7 cards
+    const FRICTION     = 0.96; // Increased for smoother deceleration
+    const VELOCITY_STOP = 0.12; // Slightly lower for smoother stop
+    const SENSITIVITY  = 0.3;
+
+    /* ================================================
+       DOM
+       ================================================ */
+    const wheel     = document.getElementById('wheel');
+    const scene     = document.getElementById('scene');
+    const nameLabel = document.getElementById('currentName');
+
+    /* ================================================
+       STATE
+       ================================================ */
+    let currentAngle   = 0;
+    let velocity       = 0;
+    let isDragging     = false;
+    let startX = 0, lastX = 0, lastTime = 0;
+    let animFrameId    = null;
+    let isAutoRotating = false;
+    let lastActiveIndex = -1; // Track last active to prevent redundant label updates
+
+    /* ================================================
+       BUILD CARDS
+       ================================================ */
+    function buildItems() {
+      SNEAKERS.forEach((s, i) => {
+        // Preload image object into browser cache aggressively
+        const preloadImg = new Image();
+        preloadImg.src = s.image;
+
+        const el = document.createElement('div');
+        el.classList.add('wheel__item');
+        el.dataset.index = i;
+        // CSS variable for the accent shadow color
+        el.style.setProperty('--accent-shadow', hexToRGBA(s.accent, 0.45));
+
+        const angle = i * ANGLE_STEP;
+        el.style.transform = `rotateY(${angle}deg) translateZ(${TRANSLATE_Z}px)`;
+
+        // Glass background panel
+        const cardBg = document.createElement('div');
+        cardBg.classList.add('card-bg');
+
+        // Dynamic Contact Shadow
+        const shadow = document.createElement('div');
+        shadow.classList.add('dynamic-shadow');
+
+        // Sneaker image
+        const img = document.createElement('img');
+        img.classList.add('sneaker-img');
+        img.src = s.image;
+        img.alt = s.name;
+        img.loading = 'eager'; // Force immediate loading for all images
+        img.draggable = false;
+
+        // Text info container
+        const info = document.createElement('div');
+        info.classList.add('card-info');
+        info.innerHTML = `
+          <span class="sneaker-name">${s.name}</span>
+          <span class="sneaker-desc">${s.shortDesc}</span>
+        `;
+
+        el.appendChild(cardBg);
+        el.appendChild(shadow);
+        el.appendChild(img);
+        el.appendChild(info);
+
+        el.addEventListener('click', () => onItemClick(i));
+        wheel.appendChild(el);
+      });
+    }
+
+    /* ================================================
+       UTILS
+       ================================================ */
+    function hexToRGBA(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    /* Get currently active item index */
+    function getCurrentActiveIndex() {
+      const items = wheel.querySelectorAll('.wheel__item');
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].classList.contains('active')) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+    /* Update bottom label with animation */
+    function updateLabel(index) {
+      const active = SNEAKERS[index];
+      
+      // Add exit animation
+      nameLabel.classList.add('updating');
+      
+      // Update text after brief delay for smooth transition
+      setTimeout(() => {
+        nameLabel.textContent = active.name;
+        nameLabel.style.textShadow = `0 0 15px ${hexToRGBA(active.accent, 0.5)}, 0 0 40px ${hexToRGBA(active.accent, 0.2)}`;
+        nameLabel.classList.remove('updating');
+      }, 250); // Slightly increased for smoother feel
+    }
+
+    /* ================================================
+       RENDER
+       ================================================ */
+    function render() {
+      wheel.style.transform = `rotateY(${currentAngle}deg)`;
+      updateActiveItem();
+    }
+
+    /* ================================================
+       ACTIVE STATE DETECTION
+       ================================================ */
+    function updateActiveItem() {
+      const items = wheel.querySelectorAll('.wheel__item');
+      let closestIndex = 0;
+      let closestDist  = Infinity;
+
+      // Find closest item to front
+      items.forEach((item, i) => {
+        let effective = (i * ANGLE_STEP + currentAngle) % 360;
+        if (effective < 0) effective += 360;
+        const dist = Math.min(effective, 360 - effective);
+        if (dist < closestDist) {
+          closestDist  = dist;
+          closestIndex = i;
+        }
+      });
+
+      // Update cards visual state
+      items.forEach((item, i) => {
+        const s = SNEAKERS[i];
+        const cardBg = item.querySelector('.card-bg');
+        const nameEl = item.querySelector('.sneaker-name');
+
+        if (i === closestIndex) {
+          item.classList.add('active');
+          cardBg.style.background = `linear-gradient(to bottom, rgba(255,255,255,0.9), ${hexToRGBA(s.accent, 0.15)})`;
+          cardBg.style.borderColor = hexToRGBA(s.accent, 0.2);
+          nameEl.style.color = s.accent;
+        } else {
+          item.classList.remove('active');
+          cardBg.style.background = '';
+          cardBg.style.borderColor = '';
+          nameEl.style.color = '';
+        }
+      });
+
+      // Update bottom label ONLY when active item changes
+      if (closestIndex !== lastActiveIndex) {
+        lastActiveIndex = closestIndex;
+        updateLabel(closestIndex);
+      }
+    }
+
+    /* ================================================
+       CLICK-TO-ROTATE
+       ================================================ */
+    function onItemClick(index) {
+      if (isDragging) return;
+      velocity = 0;
+
+      const targetAngle = -(index * ANGLE_STEP);
+      let delta = targetAngle - currentAngle;
+      delta = ((delta + 180) % 360 + 360) % 360 - 180;
+
+      const finalAngle = currentAngle + delta;
+      isAutoRotating = true;
+      const startAngle = currentAngle;
+      const startTime  = performance.now();
+      const duration   = 900; // Increased for ultra-smooth rotation
+
+      function animate(now) {
+        const elapsed  = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ultra-smooth easing: easeOutCubic
+        const ease = 1 - Math.pow(1 - progress, 3);
+
+        currentAngle = startAngle + delta * ease;
+        render();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          currentAngle = finalAngle;
+          render();
+          isAutoRotating = false;
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    /* ================================================
+       INERTIA LOOP
+       ================================================ */
+    function inertiaLoop() {
+      if (isDragging || isAutoRotating) return;
+      velocity *= FRICTION;
+      currentAngle += velocity;
+      render();
+      if (Math.abs(velocity) > VELOCITY_STOP) {
+        animFrameId = requestAnimationFrame(inertiaLoop);
+      } else {
+        velocity = 0;
+        cancelAnimationFrame(animFrameId);
+      }
+    }
+
+    /* ================================================
+       POINTER HANDLERS (Mouse + Touch)
+       ================================================ */
+    function onPointerDown(x) {
+      if (isAutoRotating) return;
+      isDragging = true;
+      document.body.classList.add('is-dragging');
+      cancelAnimationFrame(animFrameId);
+      velocity = 0;
+      startX = x; lastX = x;
+      lastTime = performance.now();
+    }
+    function onPointerMove(x) {
+      if (!isDragging) return;
+      const now = performance.now();
+      const dx  = x - lastX;
+      const dt  = now - lastTime || 16;
+      currentAngle += dx * SENSITIVITY;
+      velocity = (dx * SENSITIVITY) / (dt / 16);
+      lastX = x; lastTime = now;
+      render();
+    }
+    function onPointerUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      document.body.classList.remove('is-dragging');
+      animFrameId = requestAnimationFrame(inertiaLoop);
+    }
+
+    /* Mouse */
+    scene.addEventListener('mousedown', (e) => { e.preventDefault(); onPointerDown(e.clientX); });
+    window.addEventListener('mousemove', (e) => onPointerMove(e.clientX));
+    window.addEventListener('mouseup', () => onPointerUp());
+
+    /* Touch */
+    scene.addEventListener('touchstart', (e) => onPointerDown(e.touches[0].clientX), { passive: true });
+    window.addEventListener('touchmove', (e) => onPointerMove(e.touches[0].clientX), { passive: true });
+    window.addEventListener('touchend', () => onPointerUp());
+
+    /* Wheel / Trackpad Scroll (Snap to Item) */
+    let wheelTimeout = null;
+    scene.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (isDragging || isAutoRotating || wheelTimeout !== null) return;
+
+      const currentIndex = getCurrentActiveIndex();
+      let nextIndex = currentIndex;
+      
+      if (e.deltaY > 10) {
+        nextIndex = (currentIndex + 1) % ITEM_COUNT;
+      } else if (e.deltaY < -10) {
+        nextIndex = (currentIndex - 1 + ITEM_COUNT) % ITEM_COUNT;
+      }
+
+      if (nextIndex !== currentIndex) {
+        onItemClick(nextIndex);
+        wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 700); // Increased for smoother feel
+      }
+    }, { passive: false });
+
+    /* ================================================
+       KEYBOARD NAVIGATION (Arrow Keys)
+       ================================================ */
+    window.addEventListener('keydown', (e) => {
+      if (isDragging || isAutoRotating) return;
+
+      const currentIndex = getCurrentActiveIndex();
+      let nextIndex = currentIndex;
+
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % ITEM_COUNT;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + ITEM_COUNT) % ITEM_COUNT;
+      }
+
+      if (nextIndex !== currentIndex) {
+        onItemClick(nextIndex);
+      }
+    });
+
+    /* ================================================
+       CINEMATIC INTRO CONTROLLER
+       ================================================ */
+    function startIntro() {
+      // Add intro-running class to body
+      document.body.classList.add('intro-running');
+      
+      // Remove after animation completes (1.8s for longest animation + buffer)
+      setTimeout(() => {
+        document.body.classList.remove('intro-running');
+      }, 2000);
+    }
+
+    /* ================================================
+       INIT
+       ================================================ */
+    buildItems();
+    render();
+    
+    // Start cinematic intro after a brief moment
+    setTimeout(startIntro, 100);
+  </script>
+</body>
+</html>
