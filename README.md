@@ -1,19 +1,17 @@
-# 3D Sneaker Wheel Carousel
+# 3D Sneaker Wheel Carousel ✨
 
-An Awwwards-level interactive 3D sneaker showcase with cinematic animations and smooth transitions.
-
-![Preview](preview.png)
+Premium interactive 3D sneaker showcase with cinematic animations, smooth transitions, and glassmorphism design.
 
 ## ✨ Features
 
-- 🎨 **Premium Light Design** - Clean, modern, elegant interface
-- 🎬 **Cinematic Intro Animation** - Stunning entry reveal effect
-- 🔄 **360° 3D Carousel** - Smooth rotating wheel with depth perspective
+- 🎨 **Premium Off-White Design** - Sophisticated color palette (#FBFCF6 → #F0EEEA)
+- 🎬 **Cinematic Intro Animation** - Stunning entry with interaction lock (3s)
+- 🔄 **360° 3D Carousel** - Smooth 7-item wheel with depth perspective
 - ⌨️ **Multiple Navigation** - Mouse drag, keyboard arrows, wheel scroll, click
-- 📱 **Fully Responsive** - Works on all devices
-- ⚡ **Ultra Smooth Transitions** - Premium easing functions (1s duration)
-- 🖼️ **High-Quality Rendering** - Anti-aliasing, no pixelation
-- 🎯 **7 Unique Sneakers** - Carefully curated collection
+- 📱 **Fully Responsive** - Works flawlessly on all devices
+- ⚡ **Ultra Smooth Transitions** - Premium easing (0.55s with easeOutQuint)
+- 🖼️ **High-Quality Rendering** - Anti-aliasing, zero pixelation
+- 🎯 **7 Unique Sneakers** - Carefully curated collection with rich accent colors
 
 ## 🎮 Controls
 
@@ -44,15 +42,16 @@ cd 3d-sneaker-carousel
 
 ```
 work2/
-├── index.html          # Main file (all-in-one)
-├── images/             # Sneaker images (PNG with transparency)
+├── index.html          # Main file (all-in-one: HTML, CSS, JS)
+├── images/             # Sneaker images (7 PNG with transparency)
 │   ├── sneaker_real_1-removebg-preview.png
 │   ├── sneaker_real_2-removebg-preview.png
 │   ├── sneaker_real_3-removebg-preview.png
-│   ├── sneaker_real_4-removebg-preview.png
 │   ├── sneaker_real_5-removebg-preview.png
 │   ├── sneaker_real_6-removebg-preview.png
-│   └── sneaker_real_8-removebg-preview.png
+│   ├── sneaker_real_11-removebg-preview.png
+│   └── sneaker_real_12-removebg-preview.png
+├── .gitignore
 └── README.md
 ```
 
@@ -77,27 +76,30 @@ const SNEAKERS = [
 ### Adjust Animation Speed
 
 ```javascript
-// In JavaScript section
-const FRICTION = 0.96;        // Drag smoothness (0.9-0.98)
+const FRICTION = 0.96;        // Smooth deceleration
 const VELOCITY_STOP = 0.12;   // Stop threshold
-const SENSITIVITY = 0.3;      // Drag sensitivity
+const SENSITIVITY = 0.3;      // Drag responsiveness
+const duration = 700;         // Click rotation speed (ms)
 ```
 
 ### Change Transition Duration
 
 ```css
-/* In CSS section */
+/* Ultra-smooth card transitions */
 transition: 
-  transform 1s cubic-bezier(0.19, 1, 0.22, 1); /* Change 1s to your preference */
+  opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+  filter 0.55s cubic-bezier(0.25, 1, 0.5, 1);
 ```
 
 ## 🎯 Performance Optimizations
 
-- **Hardware Acceleration**: `transform-style: preserve-3d`
-- **Anti-Aliasing**: High-quality image rendering
-- **Scale Strategy**: Render large, scale down (prevents pixelation)
-- **Efficient Updates**: Label updates only on active item change
-- **Debounced Events**: Prevents excessive wheel/scroll triggers
+- ✅ **Hardware Acceleration** - `transform-style: preserve-3d`
+- ✅ **Anti-Aliasing** - High-quality image rendering with optimal scaling
+- ✅ **Smart Scaling** - Render large (150%), scale down to prevent pixelation
+- ✅ **Efficient Updates** - Label updates only when active item changes
+- ✅ **Interaction Lock** - Prevents glitches during cinematic intro (3000ms)
+- ✅ **Optimized Transitions** - 0.55s duration with custom easing curves
+- ✅ **Deep Contrast Colors** - Premium accent palette for light backgrounds
 
 ## 📝 Technical Highlights
 
@@ -108,9 +110,10 @@ transition:
 - Label fades in with scale animation
 
 ### Smooth Transitions
-- Premium easing: `cubic-bezier(0.19, 1, 0.22, 1)`
-- 1-second duration for all major transitions
+- Premium easing: `cubic-bezier(0.25, 1, 0.5, 1)` for cards
+- Click animation: `easeOutQuint` (700ms duration)
 - Synchronized animations across all elements
+- Staggered text reveal (150ms + 250ms delays)
 
 ### 3D Carousel Math
 - 7 items × 51.4° spacing
