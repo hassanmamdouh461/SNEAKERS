@@ -144,16 +144,15 @@
       will-change: transform, opacity;
       cursor: pointer;
 
-      opacity: 0.4; /* Increased opacity for better visibility */
-      /* Apply blur to container, not the image itself */
+      opacity: 0.4;
       filter: grayscale(0.2) blur(2px);
 
       transition:
-        opacity 1s cubic-bezier(0.19, 1, 0.22, 1),
-        filter 1s cubic-bezier(0.19, 1, 0.22, 1),
-        border-color 1s cubic-bezier(0.19, 1, 0.22, 1),
-        box-shadow 1s cubic-bezier(0.19, 1, 0.22, 1),
-        transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+        opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        filter 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        border-color 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        box-shadow 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        transform 0.55s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* Glass background panel */
@@ -170,7 +169,7 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06); /* Softer, broader shadow */
       overflow: hidden;
       z-index: 0;
-      transition: border-color 1s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 1s cubic-bezier(0.19, 1, 0.22, 1), background 1s cubic-bezier(0.19, 1, 0.22, 1);
+      transition: border-color 0.55s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.55s cubic-bezier(0.25, 1, 0.5, 1), background 0.55s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* Subtle inner highlight line at top */
@@ -214,8 +213,8 @@
       filter: brightness(0.92) drop-shadow(0 10px 10px rgba(0,0,0,0.15));
 
       transition:
-        transform 1s cubic-bezier(0.19, 1, 0.22, 1),
-        filter 1s cubic-bezier(0.19, 1, 0.22, 1);
+        transform 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        filter 0.55s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* ================================================
@@ -234,9 +233,9 @@
       z-index: 1;
       opacity: 0.8;
       transition:
-        transform 1s cubic-bezier(0.19, 1, 0.22, 1),
-        filter 1s cubic-bezier(0.19, 1, 0.22, 1),
-        opacity 1s cubic-bezier(0.19, 1, 0.22, 1);
+        transform 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        filter 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+        opacity 0.55s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .wheel__item .card-info {
@@ -256,9 +255,9 @@
       opacity: 0;
       transform: translateY(15px);
       transition:
-        opacity 0.9s cubic-bezier(0.19, 1, 0.22, 1),
-        transform 0.9s cubic-bezier(0.19, 1, 0.22, 1),
-        color 0.9s cubic-bezier(0.19, 1, 0.22, 1);
+        opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+        transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+        color 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .wheel__item .card-info .sneaker-name {
@@ -480,7 +479,7 @@
     }
   </style>
 </head>
-<body>
+<body class="intro-running">
 
   <!-- ==================== HEADER ==================== -->
   <div class="header">
@@ -576,6 +575,7 @@
     let animFrameId    = null;
     let isAutoRotating = false;
     let lastActiveIndex = -1; // Track last active to prevent redundant label updates
+    let isIntroPlaying  = true; // Interaction lock during cinematic intro
 
     /* ================================================
        BUILD CARDS
@@ -722,6 +722,7 @@
        CLICK-TO-ROTATE
        ================================================ */
     function onItemClick(index) {
+      if (isIntroPlaying) return;
       if (isDragging) return;
       velocity = 0;
 
@@ -733,13 +734,13 @@
       isAutoRotating = true;
       const startAngle = currentAngle;
       const startTime  = performance.now();
-      const duration   = 900; // Increased for ultra-smooth rotation
+      const duration   = 700; // Fast but smooth rotation
 
       function animate(now) {
         const elapsed  = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Ultra-smooth easing: easeOutCubic
-        const ease = 1 - Math.pow(1 - progress, 3);
+        // easeOutQuint: snappy start, ultra-smooth finish
+        const ease = 1 - Math.pow(1 - progress, 5);
 
         currentAngle = startAngle + delta * ease;
         render();
@@ -775,6 +776,7 @@
        POINTER HANDLERS (Mouse + Touch)
        ================================================ */
     function onPointerDown(x) {
+      if (isIntroPlaying) return;
       if (isAutoRotating) return;
       isDragging = true;
       document.body.classList.add('is-dragging');
@@ -814,7 +816,7 @@
     let wheelTimeout = null;
     scene.addEventListener('wheel', (e) => {
       e.preventDefault();
-      if (isDragging || isAutoRotating || wheelTimeout !== null) return;
+      if (isIntroPlaying || isDragging || isAutoRotating || wheelTimeout !== null) return;
 
       const currentIndex = getCurrentActiveIndex();
       let nextIndex = currentIndex;
@@ -835,7 +837,7 @@
        KEYBOARD NAVIGATION (Arrow Keys)
        ================================================ */
     window.addEventListener('keydown', (e) => {
-      if (isDragging || isAutoRotating) return;
+      if (isIntroPlaying || isDragging || isAutoRotating) return;
 
       const currentIndex = getCurrentActiveIndex();
       let nextIndex = currentIndex;
@@ -857,13 +859,12 @@
        CINEMATIC INTRO CONTROLLER
        ================================================ */
     function startIntro() {
-      // Add intro-running class to body
-      document.body.classList.add('intro-running');
-      
-      // Remove after animation completes (longer duration for slower intro)
+      // intro-running is already on body from HTML; just schedule removal
+      // 3000ms = exact end of longest CSS animation (fadeInBackground: 1500ms delay + 1500ms duration)
       setTimeout(() => {
         document.body.classList.remove('intro-running');
-      }, 3500);
+        isIntroPlaying = false; // Unlock all interactions after intro completes
+      }, 3000);
     }
 
     /* ================================================
@@ -872,8 +873,8 @@
     buildItems();
     render();
     
-    // Start cinematic intro after viewer's eyes are ready
-    setTimeout(startIntro, 800);
+    // Start cinematic intro immediately (body already has intro-running class)
+    setTimeout(startIntro, 50);
   </script>
 </body>
 </html>
