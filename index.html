@@ -402,13 +402,13 @@
 
     /* ACTIVE ITEM INTRO: Sneaker drops from sky */
     body.intro-running .wheel__item.active .sneaker-img {
-      animation: sneakerDrop 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation: sneakerDrop 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     @keyframes sneakerDrop {
       0% {
         opacity: 0;
-        transform: translateX(-50%) translateY(-250px) scale(0.35) rotate(-25deg);
+        transform: translateX(-50%) translateY(-500px) scale(0.35) rotate(-25deg);
       }
       100% {
         opacity: 1;
@@ -419,13 +419,13 @@
 
     /* ACTIVE ITEM INTRO: Card rises from bottom */
     body.intro-running .wheel__item.active .card-bg {
-      animation: cardRise 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+      animation: cardRise 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
     }
 
     @keyframes cardRise {
       0% {
         opacity: 0;
-        transform: translateY(150px) scale(0.9);
+        transform: translateY(300px) scale(0.9);
       }
       100% {
         opacity: 1;
@@ -435,13 +435,13 @@
 
     /* ACTIVE ITEM INTRO: Text info rises */
     body.intro-running .wheel__item.active .card-info {
-      animation: infoRise 1s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+      animation: infoRise 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.7s forwards;
     }
 
     @keyframes infoRise {
       0% {
         opacity: 0;
-        transform: translateY(100px);
+        transform: translateY(150px);
       }
       100% {
         opacity: 1;
@@ -467,7 +467,7 @@
     body.intro-running .wheel__item:not(.active) .sneaker-img,
     body.intro-running .wheel__item:not(.active) .card-bg,
     body.intro-running .wheel__item:not(.active) .dynamic-shadow {
-      animation: fadeInBackground 0.8s ease-out 1s forwards;
+      animation: fadeInBackground 1.5s ease-out 1.5s forwards;
     }
 
     @keyframes fadeInBackground {
@@ -509,44 +509,44 @@
        ================================================ */
     const SNEAKERS = [
       {
-        name: 'White Classic',
-        shortDesc: 'Clean and recognizable',
+        name: 'Cloud Runner',
+        shortDesc: 'Timeless minimalist design',
         accent: '#f0c674',
         image: 'images/sneaker_real_1-removebg-preview.png'
       },
       {
-        name: 'Beige Casual',
-        shortDesc: 'Soft neutral tones',
+        name: 'Desert Storm',
+        shortDesc: 'Earthy comfort vibes',
         accent: '#d4a574',
         image: 'images/sneaker_real_12-removebg-preview.png'
       },
       {
-        name: 'Red High-Top',
-        shortDesc: 'Dynamic streetwear',
+        name: 'Fire Brigade',
+        shortDesc: 'Bold urban statement',
         accent: '#ff3c3c',
         image: 'images/sneaker_real_2-removebg-preview.png'
       },
       {
-        name: 'Retro Runner',
-        shortDesc: 'Grey suede with purple',
+        name: 'Purple Haze',
+        shortDesc: 'Vintage court classic',
         accent: '#a78bfa',
         image: 'images/sneaker_real_3-removebg-preview.png'
       },
       {
-        name: 'Navy Canvas',
-        shortDesc: 'Classic blue low-top',
+        name: 'Ocean Wave',
+        shortDesc: 'Maritime casual style',
         accent: '#4a7cff',
         image: 'images/sneaker_real_11-removebg-preview.png'
       },
       {
-        name: 'Metallic Dad',
-        shortDesc: 'Chunky white mesh',
+        name: 'Chrome Force',
+        shortDesc: 'Future tech aesthetic',
         accent: '#00d4ff',
         image: 'images/sneaker_real_5-removebg-preview.png'
       },
       {
-        name: 'Classic Skate',
-        shortDesc: 'Black suede wide laces',
+        name: 'Shadow Elite',
+        shortDesc: 'Street legend status',
         accent: '#ffffff',
         image: 'images/sneaker_real_6-removebg-preview.png'
       }
@@ -860,10 +860,10 @@
       // Add intro-running class to body
       document.body.classList.add('intro-running');
       
-      // Remove after animation completes (1.8s for longest animation + buffer)
+      // Remove after animation completes (longer duration for slower intro)
       setTimeout(() => {
         document.body.classList.remove('intro-running');
-      }, 2000);
+      }, 3500);
     }
 
     /* ================================================
@@ -872,8 +872,8 @@
     buildItems();
     render();
     
-    // Start cinematic intro after a brief moment
-    setTimeout(startIntro, 100);
+    // Start cinematic intro after viewer's eyes are ready
+    setTimeout(startIntro, 800);
   </script>
 </body>
 </html>
